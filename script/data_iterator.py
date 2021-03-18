@@ -3,7 +3,7 @@ import json
 import _pickle as pkl
 # import cPickle as pkl
 import random
-
+import os
 import gzip
 
 import shuffle
@@ -38,7 +38,8 @@ class DataIterator:
                  shuffle_each_epoch=False,
                  sort_by_length=True,
                  max_batch_size=20,
-                 minlen=None):
+                 minlen=None,
+                 root_path=r'D:\DATA\amazon_product'):
         if shuffle_each_epoch:
             self.source_orig = source
             self.source = shuffle.main(self.source_orig, temporary=True)
@@ -48,7 +49,7 @@ class DataIterator:
         for source_dict in [uid_voc, mid_voc, cat_voc]:
             self.source_dicts.append(load_dict(source_dict))
 
-        f_meta = open("../data/item-info", "r", encoding='utf-8')
+        f_meta = open(os.path.join(root_path, "item-info"), "r", encoding='utf-8')
         meta_map = {}
         for line in f_meta:
             arr = line.strip().split("\t")
@@ -67,7 +68,7 @@ class DataIterator:
                 cat_idx = 0
             self.meta_id_map[mid_idx] = cat_idx
 
-        f_review = open("../data/reviews-info", "r", encoding='utf-8')
+        f_review = open(os.path.join(root_path, "reviews-info"), "r", encoding='utf-8')
         self.mid_list_for_random = []
         for line in f_review:
             arr = line.strip().split("\t")

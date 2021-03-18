@@ -44,14 +44,14 @@ def manual_join():
             arr = line.strip().split("\t")
     fo = open("jointed-new", "w")
     for key in user_map:
-        sorted_user_bh = sorted(user_map[key], key=lambda x:x[1])
+        sorted_user_bh = sorted(user_map[key], key=lambda x:x[1]) # 按照评论时间排序
         for line, t in sorted_user_bh:
-            items = line.split("\t")
+            items = line.split("\t") # "用户id 商品id 商品评分 评价时间"
             asin = items[1]
             j = 0
             while True:
                 asin_neg_index = random.randint(0, len(item_list) - 1)
-                asin_neg = item_list[asin_neg_index]
+                asin_neg = item_list[asin_neg_index] # 随机选择一个商品id
                 if asin_neg == asin:
                     continue 
                 items[1] = asin_neg
@@ -68,7 +68,7 @@ def manual_join():
 def split_test():
     fi = open("jointed-new", "r")
     fo = open("jointed-new-split-info", "w")
-    user_count = {}
+    user_count = {} # 用户id 出现次数
     for line in fi:
         line = line.strip()
         user = line.split("\t")[1]

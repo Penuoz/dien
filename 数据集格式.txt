@@ -1,4 +1,16 @@
 item-info: 商品id 类别
 reviews-info: 用户id 商品id 商品评分 评价时间
 
-jointed-new:
+jointed-new: 按照用户id-评价时间排序
+0  用户id 错误商品id 商品评分 评价时间 类别
+1  用户id 正确商品id 商品评分 评价时间 类别
+
+jointed-new-split-info：
+20180118 x 用户id 错误商品id 商品评分 评价时间 类别 (用户评论前-2条，分成了训练集）
+20190119 x 用户id 错误商品id 商品评分 评价时间 类别 （后几条， 分成测试集）
+
+local_train、test：
+0/1 用户id 商品id 类别 所有点击商品id字符串（用分隔） 所有点击类别字符串
+
+local_train_splitByUser：对local_test随即划分的结果
+local_test_splitByUser

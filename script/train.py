@@ -6,6 +6,7 @@ import time
 import random
 import sys
 from utils import *
+import os
 
 EMBEDDING_DIM = 18
 HIDDEN_SIZE = 18 * 2
@@ -108,18 +109,24 @@ def eval(sess, test_data, model, model_path):
 
 
 def train(
-        train_file="../data/local_train_splitByUser",
-        test_file="../data/local_test_splitByUser",
-        uid_voc="../data/uid_voc.pkl",
-        mid_voc="../data/mid_voc.pkl",
-        cat_voc="../data/cat_voc.pkl",
+        train_file="local_train_splitByUser",
+        test_file="local_test_splitByUser",
+        uid_voc="uid_voc.pkl",
+        mid_voc="mid_voc.pkl",
+        cat_voc="cat_voc.pkl",
         batch_size=128,
         maxlen=100,
         test_iter=100,
         save_iter=100,
         model_type='DNN',
         seed=2,
+        root_path=r'D:\DATA\amazon_product'
 ):
+    train_file = os.path.join(root_path, train_file)
+    test_file = os.path.join(root_path, test_file)
+    uid_voc = os.path.join(root_path, uid_voc)
+    mid_voc = os.path.join(root_path, mid_voc)
+    cat_voc = os.path.join(root_path, cat_voc)
     model_path = "dnn_save_path/ckpt_noshuff" + model_type + str(seed)
     best_model_path = "dnn_best_model/ckpt_noshuff" + model_type + str(seed)
     gpu_options = tf.GPUOptions(allow_growth=True)
