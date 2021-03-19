@@ -1,15 +1,12 @@
 import tensorflow as tf
 from tensorflow.python.ops.rnn_cell import *
-# from tensorflow.python.ops.rnn_cell_impl
-from tensorflow.python.ops import rnn_cell_impl
 
-linear = rnn_cell_impl._linear
-# from tensorflow import keras
+from tensorflow.python.ops.rnn_cell_impl import  _Linear
+
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import variable_scope as vs
-# from keras import backend as K
 
 class QAAttGRUCell(RNNCell):
   """Gated Recurrent Unit cell (cf. http://arxiv.org/abs/1406.1078).

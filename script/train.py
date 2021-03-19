@@ -206,9 +206,16 @@ def test(
         batch_size=128,
         maxlen=100,
         model_type='DNN',
-        seed=2
+        seed=2,
+        root_path=r'D:\DATA\amazon_product'
 ):
-    model_path = "dnn_best_model/ckpt_noshuff" + model_type + str(seed)
+    train_file = os.path.join(root_path, train_file)
+    test_file = os.path.join(root_path, test_file)
+    uid_voc = os.path.join(root_path, uid_voc)
+    mid_voc = os.path.join(root_path, mid_voc)
+    cat_voc = os.path.join(root_path, cat_voc)
+    # model_path = "dnn_best_model/ckpt_noshuff" + model_type + str(seed)
+    model_path = "E:\dien\script\dnn_save_path\ckpt_noshuffDIEN3--18300"
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         train_data = DataIterator(train_file, uid_voc, mid_voc, cat_voc, batch_size, maxlen)
