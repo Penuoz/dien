@@ -3,9 +3,11 @@ import os
 
 root_path = r'D:\DATA\tianmao'
 f_train = open(os.path.join(root_path, "local_train_splitByUser"), "r")
+seller_file = open(os.path.join(os.path.join(root_path, 'item-info')), 'r')
 uid_dict = {}
 mid_dict = {}
 cat_dict = {}
+sid_dict = {}
 
 iddd = 0
 for line in f_train:
@@ -38,6 +40,11 @@ for line in f_train:
             cat_dict[c] = 0
         cat_dict[c] += 1
 
+
+for line in seller_file.readline():
+    items = line.strip().split("\t")
+
+
 sorted_uid_dict = sorted(uid_dict.items(), key=lambda x:x[1], reverse=True)
 sorted_mid_dict = sorted(mid_dict.items(), key=lambda x:x[1], reverse=True)
 sorted_cat_dict = sorted(cat_dict.items(), key=lambda x:x[1], reverse=True)
@@ -62,7 +69,7 @@ for key, value in sorted_cat_dict:
     cat_voc[key] = index
     index += 1
 
-# with open(os.path.join(root_path, "uid_voc.pkl"), "wb") as fp:
-#     cPickle.dump(uid_voc, fp)
+
+cPickle.dump(uid_voc, open(os.path.join(root_path, "uid_voc.pkl"), "wb"))
 cPickle.dump(mid_voc, open(os.path.join(root_path, "mid_voc.pkl"), "wb"))
 cPickle.dump(cat_voc, open(os.path.join(root_path, "cat_voc.pkl"), "wb"))
