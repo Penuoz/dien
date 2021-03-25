@@ -1,8 +1,10 @@
 import random
+import os
 
-fi = open("local_test", "r")
-ftrain = open("local_train_splitByUser", "w")
-ftest = open("local_test_splitByUser", "w")
+root_path = r'D:\DATA\tianmao'
+fi = open(os.path.join(root_path, "local_test"), "r")
+ftrain = open(os.path.join(root_path, "local_train_splitByUser"), "w")
+ftest = open(os.path.join(root_path, "local_test_splitByUser"), "w")
 
 while True:
     rand_int = random.randint(1, 10)
