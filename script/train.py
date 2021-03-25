@@ -258,7 +258,7 @@ if __name__ == '__main__':
     numpy.random.seed(SEED)
     random.seed(SEED)
     if sys.argv[1] == 'train':
-        train(model_type=sys.argv[2], seed=SEED)
+        train(model_type=sys.argv[2], seed=SEED, root_path=r'D:\DATA\tianmao')
     elif sys.argv[1] == 'test':
         test(model_type=sys.argv[2], seed=SEED)
     else:
