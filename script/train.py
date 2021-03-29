@@ -86,7 +86,7 @@ def eval(sess, test_data, model, model_path):
     stored_arr = []
     for src, tgt in test_data:
         nums += 1
-        uids, mids, cats, mid_his, cat_his, mid_mask, target, sl, noclk_mids, noclk_cats = prepare_data(src, tgt,
+        uids, genders, sids, mid_his, cat_his, mid_mask, target, sl, noclk_mids, noclk_cats = prepare_data(src, tgt,
                                                                                                         return_neg=True)
         prob, loss, acc, aux_loss = model.calculate(sess, [uids, mids, cats, mid_his, cat_his, mid_mask, target, sl,
                                                            noclk_mids, noclk_cats])
@@ -109,11 +109,12 @@ def eval(sess, test_data, model, model_path):
 
 
 def train(
-        train_file="local_train_splitByUser",
-        test_file="local_test_splitByUser",
+        train_file="local_train",
+        test_file="local_test",
         uid_voc="uid_voc.pkl",
         mid_voc="mid_voc.pkl",
         cat_voc="cat_voc.pkl",
+        sid_voc="sid_voc.pkl",
         batch_size=128,
         maxlen=100,
         test_iter=100,
@@ -127,32 +128,33 @@ def train(
     uid_voc = os.path.join(root_path, uid_voc)
     mid_voc = os.path.join(root_path, mid_voc)
     cat_voc = os.path.join(root_path, cat_voc)
+    sid_voc = os.path.join(root_path, sid_voc)
     model_path = "dnn_save_path/ckpt_noshuff" + model_type + str(seed)
     best_model_path = "dnn_best_model/ckpt_noshuff" + model_type + str(seed)
     gpu_options = tf.GPUOptions(allow_growth=True)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
-        train_data = DataIterator(train_file, uid_voc, mid_voc, cat_voc, batch_size, maxlen, shuffle_each_epoch=False)
-        test_data = DataIterator(test_file, uid_voc, mid_voc, cat_voc, batch_size, maxlen)
+        train_data = DataIterator(train_file, uid_voc, mid_voc, cat_voc, sid_voc, batch_size, maxlen, shuffle_each_epoch=False)
+        test_data = DataIterator(test_file, uid_voc, mid_voc, cat_voc, sid_voc, batch_size, maxlen)
         print("prepare data done!")
-        n_uid, n_mid, n_cat = train_data.get_n()
+        n_uid, n_mid, n_cat, n_sid = train_data.get_n()
         if model_type == 'DNN':
-            model = Model_DNN(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DNN(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'PNN':
-            model = Model_PNN(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_PNN(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'Wide':
-            model = Model_WideDeep(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_WideDeep(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'DIN':
-            model = Model_DIN(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DIN(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'DIN-V2-gru-att-gru':
-            model = Model_DIN_V2_Gru_att_Gru(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DIN_V2_Gru_att_Gru(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'DIN-V2-gru-gru-att':
-            model = Model_DIN_V2_Gru_Gru_att(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DIN_V2_Gru_Gru_att(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'DIN-V2-gru-qa-attGru':
-            model = Model_DIN_V2_Gru_QA_attGru(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DIN_V2_Gru_QA_attGru(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'DIN-V2-gru-vec-attGru':
-            model = Model_DIN_V2_Gru_Vec_attGru(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DIN_V2_Gru_Vec_attGru(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         elif model_type == 'DIEN':
-            model = Model_DIN_V2_Gru_Vec_attGru_Neg(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
+            model = Model_DIN_V2_Gru_Vec_attGru_Neg(n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE)
         else:
             print("Invalid model_type : %s", model_type)
             return
@@ -160,8 +162,8 @@ def train(
         sess.run(tf.global_variables_initializer())
         sess.run(tf.local_variables_initializer())
         sys.stdout.flush()
-        print('test_auc: %.4f ---- test_loss: %.4f ---- test_accuracy: %.4f ---- test_aux_loss: %.4f' % eval(
-                sess, test_data, model, best_model_path))
+        # print('test_auc: %.4f ---- test_loss: %.4f ---- test_accuracy: %.4f ---- test_aux_loss: %.4f' % eval(
+        #         sess, test_data, model, best_model_path))
         sys.stdout.flush()
 
         start_time = time.time()

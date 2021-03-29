@@ -32,6 +32,7 @@ class DataIterator:
                  uid_voc,
                  mid_voc,
                  cat_voc,
+                 sid_voc,
                  batch_size=128,
                  maxlen=100,
                  skip_empty=False,
@@ -46,7 +47,7 @@ class DataIterator:
         else:
             self.source = fopen(source, 'r')
         self.source_dicts = []
-        for source_dict in [uid_voc, mid_voc, cat_voc]:
+        for source_dict in [uid_voc, mid_voc, cat_voc, sid_voc]:
             self.source_dicts.append(load_dict(source_dict))
 
         f_meta = open(os.path.join(root_path, "item-info"), "r", encoding='utf-8')
@@ -85,6 +86,7 @@ class DataIterator:
         self.n_uid = len(self.source_dicts[0])
         self.n_mid = len(self.source_dicts[1])
         self.n_cat = len(self.source_dicts[2])
+        self.n_sid = len(self.source_dicts[3])
 
         self.shuffle = shuffle_each_epoch
         self.sort_by_length = sort_by_length
@@ -95,7 +97,7 @@ class DataIterator:
         self.end_of_data = False
 
     def get_n(self):
-        return self.n_uid, self.n_mid, self.n_cat
+        return self.n_uid, self.n_mid, self.n_cat, self.n_sid
 
     def __iter__(self):
         return self
@@ -151,14 +153,15 @@ class DataIterator:
                 uid = self.source_dicts[0][ss[1]] if ss[1] in self.source_dicts[0] else 0
                 mid = self.source_dicts[1][ss[2]] if ss[2] in self.source_dicts[1] else 0
                 cat = self.source_dicts[2][ss[3]] if ss[3] in self.source_dicts[2] else 0
+                sid = self.source_dicts[3][ss[4]] if ss[4] in self.source_dicts[3] else 0
                 tmp = []
-                for fea in ss[4].split(""):
+                for fea in ss[5].split(""):
                     m = self.source_dicts[1][fea] if fea in self.source_dicts[1] else 0
                     tmp.append(m)
                 mid_list = tmp
 
                 tmp1 = []
-                for fea in ss[5].split(""):
+                for fea in ss[6].split(""):
                     c = self.source_dicts[2][fea] if fea in self.source_dicts[2] else 0
                     tmp1.append(c)
                 cat_list = tmp1
@@ -191,7 +194,7 @@ class DataIterator:
                             break
                     noclk_mid_list.append(noclk_tmp_mid)
                     noclk_cat_list.append(noclk_tmp_cat)
-                source.append([uid, mid, cat, mid_list, cat_list, noclk_mid_list, noclk_cat_list])
+                source.append([uid, mid, cat, sid, mid_list, cat_list, noclk_mid_list, noclk_cat_list])
                 target.append([float(ss[0]), 1-float(ss[0])])
 
                 if len(source) >= self.batch_size or len(target) >= self.batch_size:

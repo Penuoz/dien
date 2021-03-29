@@ -8,13 +8,12 @@ from utils import *
 from Dice import dice
 
 class Model(object):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling = False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling = False):
         with tf.name_scope('Inputs'):
             self.mid_his_batch_ph = tf.placeholder(tf.int32, [None, None], name='mid_his_batch_ph')
             self.cat_his_batch_ph = tf.placeholder(tf.int32, [None, None], name='cat_his_batch_ph')
             self.uid_batch_ph = tf.placeholder(tf.int32, [None, ], name='uid_batch_ph')
-            self.mid_batch_ph = tf.placeholder(tf.int32, [None, ], name='mid_batch_ph')
-            self.cat_batch_ph = tf.placeholder(tf.int32, [None, ], name='cat_batch_ph')
+            self.sid_batch_ph = tf.placeholder(tf.int32, [None, ], name='sid_batch_ph')
             self.mask = tf.placeholder(tf.float32, [None, None], name='mask')
             self.seq_len_ph = tf.placeholder(tf.int32, [None], name='seq_len_ph')
             self.target_ph = tf.placeholder(tf.float32, [None, None], name='target_ph')
@@ -30,21 +29,22 @@ class Model(object):
             tf.summary.histogram('uid_embeddings_var', self.uid_embeddings_var)
             self.uid_batch_embedded = tf.nn.embedding_lookup(self.uid_embeddings_var, self.uid_batch_ph)
 
+            self.sid_embeddings_var = tf.get_variable("sid_embedding_var", [n_sid, EMBEDDING_DIM])
+            tf.summary.histogram('sid_embeddings_var', self.sid_embeddings_var)
+            self.sid_batch_embedded = tf.nn.embedding_lookup(self.sid_embeddings_var, self.sid_batch_ph)
+
             self.mid_embeddings_var = tf.get_variable("mid_embedding_var", [n_mid, EMBEDDING_DIM])
-            tf.summary.histogram('mid_embeddings_var', self.mid_embeddings_var)
-            self.mid_batch_embedded = tf.nn.embedding_lookup(self.mid_embeddings_var, self.mid_batch_ph)
+            tf.summary.histogram('msid_embeddings_var', self.mid_embeddings_var)
             self.mid_his_batch_embedded = tf.nn.embedding_lookup(self.mid_embeddings_var, self.mid_his_batch_ph)
             if self.use_negsampling:
                 self.noclk_mid_his_batch_embedded = tf.nn.embedding_lookup(self.mid_embeddings_var, self.noclk_mid_batch_ph)
 
             self.cat_embeddings_var = tf.get_variable("cat_embedding_var", [n_cat, EMBEDDING_DIM])
             tf.summary.histogram('cat_embeddings_var', self.cat_embeddings_var)
-            self.cat_batch_embedded = tf.nn.embedding_lookup(self.cat_embeddings_var, self.cat_batch_ph)
             self.cat_his_batch_embedded = tf.nn.embedding_lookup(self.cat_embeddings_var, self.cat_his_batch_ph)
             if self.use_negsampling:
                 self.noclk_cat_his_batch_embedded = tf.nn.embedding_lookup(self.cat_embeddings_var, self.noclk_cat_batch_ph)
 
-        self.item_eb = tf.concat([self.mid_batch_embedded, self.cat_batch_embedded], 1)
         self.item_his_eb = tf.concat([self.mid_his_batch_embedded, self.cat_his_batch_embedded], 2)
         self.item_his_eb_sum = tf.reduce_sum(self.item_his_eb, 1)
         if self.use_negsampling:
@@ -178,7 +178,7 @@ class Model(object):
         print('model restored from %s' % path)
 
 class Model_DIN_V2_Gru_att_Gru(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_DIN_V2_Gru_att_Gru, self).__init__(n_uid, n_mid, n_cat,
                                                        EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE,
                                                        use_negsampling)
@@ -207,7 +207,7 @@ class Model_DIN_V2_Gru_att_Gru(Model):
         self.build_fcn_net(inp, use_dice=True)
 
 class Model_DIN_V2_Gru_Gru_att(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_DIN_V2_Gru_Gru_att, self).__init__(n_uid, n_mid, n_cat,
                                                        EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE,
                                                        use_negsampling)
@@ -236,7 +236,7 @@ class Model_DIN_V2_Gru_Gru_att(Model):
         self.build_fcn_net(inp, use_dice=True)
 
 class Model_WideDeep(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_WideDeep, self).__init__(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE,
                                         ATTENTION_SIZE,
                                         use_negsampling)
@@ -267,7 +267,7 @@ class Model_WideDeep(Model):
 
 
 class Model_DIN_V2_Gru_QA_attGru(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_DIN_V2_Gru_QA_attGru, self).__init__(n_uid, n_mid, n_cat,
                                                          EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE,
                                                          use_negsampling)
@@ -296,7 +296,7 @@ class Model_DIN_V2_Gru_QA_attGru(Model):
         self.build_fcn_net(inp, use_dice=True)
 
 class Model_DNN(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_DNN, self).__init__(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE,
                                                           ATTENTION_SIZE,
                                                           use_negsampling)
@@ -305,7 +305,7 @@ class Model_DNN(Model):
         self.build_fcn_net(inp, use_dice=False)
 
 class Model_PNN(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_PNN, self).__init__(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE,
                                         ATTENTION_SIZE,
                                         use_negsampling)
@@ -318,7 +318,7 @@ class Model_PNN(Model):
 
 
 class Model_DIN(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_DIN, self).__init__(n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE,
                                            ATTENTION_SIZE,
                                            use_negsampling)
@@ -334,8 +334,8 @@ class Model_DIN(Model):
 
 
 class Model_DIN_V2_Gru_Vec_attGru_Neg(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=True):
-        super(Model_DIN_V2_Gru_Vec_attGru_Neg, self).__init__(n_uid, n_mid, n_cat,
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=True):
+        super(Model_DIN_V2_Gru_Vec_attGru_Neg, self).__init__(n_uid, n_mid, n_cat, n_sid,
                                                           EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE,
                                                           use_negsampling)
 
@@ -353,7 +353,7 @@ class Model_DIN_V2_Gru_Vec_attGru_Neg(Model):
 
         # Attention layer
         with tf.name_scope('Attention_layer_1'):
-            att_outputs, alphas = din_fcn_attention(self.item_eb, rnn_outputs, ATTENTION_SIZE, self.mask,
+            att_outputs, alphas = din_fcn_attention(self.sid_batch_embedded, rnn_outputs, ATTENTION_SIZE, self.mask,
                                                     softmax_stag=1, stag='1_1', mode='LIST', return_alphas=True)
             tf.summary.histogram('alpha_outputs', alphas)
 
@@ -364,12 +364,12 @@ class Model_DIN_V2_Gru_Vec_attGru_Neg(Model):
                                                      scope="gru2")
             tf.summary.histogram('GRU2_Final_State', final_state2)
 
-        inp = tf.concat([self.uid_batch_embedded, self.item_eb, self.item_his_eb_sum, self.item_eb * self.item_his_eb_sum, final_state2], 1)
+        inp = tf.concat([self.uid_batch_embedded, self.sid_batch_embedded, self.item_his_eb_sum, self.sid_batch_embedded * self.item_his_eb_sum, final_state2], 1)
         self.build_fcn_net(inp, use_dice=True)
 
 
 class Model_DIN_V2_Gru_Vec_attGru(Model):
-    def __init__(self, n_uid, n_mid, n_cat, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
+    def __init__(self, n_uid, n_mid, n_cat, n_sid, EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE, use_negsampling=False):
         super(Model_DIN_V2_Gru_Vec_attGru, self).__init__(n_uid, n_mid, n_cat,
                                                           EMBEDDING_DIM, HIDDEN_SIZE, ATTENTION_SIZE,
                                                           use_negsampling)
