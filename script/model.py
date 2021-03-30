@@ -46,7 +46,7 @@ class Model(object):
                 self.noclk_cat_his_batch_embedded = tf.nn.embedding_lookup(self.cat_embeddings_var, self.noclk_cat_batch_ph)
 
         self.item_his_eb = tf.concat([self.mid_his_batch_embedded, self.cat_his_batch_embedded], 2)
-        self.item_his_eb_sum = tf.reduce_sum(self.item_his_eb, 1)
+        self.item_his_eb_sum = tf.reduce_sum(self.mid_his_batch_embedded, 1)
         if self.use_negsampling:
             self.noclk_item_his_eb = tf.concat(
                 [self.noclk_mid_his_batch_embedded[:, :, 0, :], self.noclk_cat_his_batch_embedded[:, :, 0, :]], -1)# 0 means only using the first negative item ID. 3 item IDs are inputed in the line 24.
@@ -114,29 +114,27 @@ class Model(object):
         if self.use_negsampling:
             loss, accuracy, aux_loss, _ = sess.run([self.loss, self.accuracy, self.aux_loss, self.optimizer], feed_dict={
                 self.uid_batch_ph: inps[0],
-                self.mid_batch_ph: inps[1],
-                self.cat_batch_ph: inps[2],
-                self.mid_his_batch_ph: inps[3],
-                self.cat_his_batch_ph: inps[4],
-                self.mask: inps[5],
-                self.target_ph: inps[6],
-                self.seq_len_ph: inps[7],
-                self.lr: inps[8],
-                self.noclk_mid_batch_ph: inps[9],
-                self.noclk_cat_batch_ph: inps[10],
+                self.sid_batch_ph: inps[1],
+                self.mid_his_batch_ph: inps[2],
+                self.cat_his_batch_ph: inps[3],
+                self.mask: inps[4],
+                self.target_ph: inps[5],
+                self.seq_len_ph: inps[6],
+                self.lr: inps[7],
+                self.noclk_mid_batch_ph: inps[8],
+                self.noclk_cat_batch_ph: inps[9],
             })
             return loss, accuracy, aux_loss
         else:
             loss, accuracy, _ = sess.run([self.loss, self.accuracy, self.optimizer], feed_dict={
                 self.uid_batch_ph: inps[0],
-                self.mid_batch_ph: inps[1],
-                self.cat_batch_ph: inps[2],
-                self.mid_his_batch_ph: inps[3],
-                self.cat_his_batch_ph: inps[4],
-                self.mask: inps[5],
-                self.target_ph: inps[6],
-                self.seq_len_ph: inps[7],
-                self.lr: inps[8],
+                self.sid_batch_ph: inps[1],
+                self.mid_his_batch_ph: inps[2],
+                self.cat_his_batch_ph: inps[3],
+                self.mask: inps[4],
+                self.target_ph: inps[5],
+                self.seq_len_ph: inps[6],
+                self.lr: inps[7],
             })
             return loss, accuracy, 0
 
@@ -144,22 +142,20 @@ class Model(object):
         if self.use_negsampling:
             probs, loss, accuracy, aux_loss = sess.run([self.y_hat, self.loss, self.accuracy, self.aux_loss], feed_dict={
                 self.uid_batch_ph: inps[0],
-                self.mid_batch_ph: inps[1],
-                self.cat_batch_ph: inps[2],
-                self.mid_his_batch_ph: inps[3],
-                self.cat_his_batch_ph: inps[4],
-                self.mask: inps[5],
-                self.target_ph: inps[6],
-                self.seq_len_ph: inps[7],
-                self.noclk_mid_batch_ph: inps[8],
-                self.noclk_cat_batch_ph: inps[9],
+                self.sid_batch_ph: inps[1],
+                self.mid_his_batch_ph: inps[2],
+                self.cat_his_batch_ph: inps[3],
+                self.mask: inps[4],
+                self.target_ph: inps[5],
+                self.seq_len_ph: inps[6],
+                self.noclk_mid_batch_ph: inps[7],
+                self.noclk_cat_batch_ph: inps[8],
             })
             return probs, loss, accuracy, aux_loss
         else:
             probs, loss, accuracy = sess.run([self.y_hat, self.loss, self.accuracy], feed_dict={
                 self.uid_batch_ph: inps[0],
-                self.mid_batch_ph: inps[1],
-                self.cat_batch_ph: inps[2],
+                self.sid_batch_ph: inps[1],
                 self.mid_his_batch_ph: inps[3],
                 self.cat_his_batch_ph: inps[4],
                 self.mask: inps[5],

@@ -16,11 +16,11 @@ best_auc = 0.0
 
 def prepare_data(input, target, maxlen=None, return_neg=False):
     # x: a list of sentences
-    lengths_x = [len(s[4]) for s in input]
-    seqs_mid = [inp[3] for inp in input]
-    seqs_cat = [inp[4] for inp in input]
-    noclk_seqs_mid = [inp[5] for inp in input]
-    noclk_seqs_cat = [inp[6] for inp in input]
+    lengths_x = [len(s[2]) for s in input]
+    seqs_mid = [inp[2] for inp in input]
+    seqs_cat = [inp[3] for inp in input]
+    noclk_seqs_mid = [inp[4] for inp in input]
+    noclk_seqs_cat = [inp[5] for inp in input]
 
     if maxlen is not None:
         new_seqs_mid = []
@@ -30,16 +30,16 @@ def prepare_data(input, target, maxlen=None, return_neg=False):
         new_lengths_x = []
         for l_x, inp in zip(lengths_x, input):
             if l_x > maxlen:
-                new_seqs_mid.append(inp[3][l_x - maxlen:])
-                new_seqs_cat.append(inp[4][l_x - maxlen:])
-                new_noclk_seqs_mid.append(inp[5][l_x - maxlen:])
-                new_noclk_seqs_cat.append(inp[6][l_x - maxlen:])
+                new_seqs_mid.append(inp[2][l_x - maxlen:])
+                new_seqs_cat.append(inp[3][l_x - maxlen:])
+                new_noclk_seqs_mid.append(inp[4][l_x - maxlen:])
+                new_noclk_seqs_cat.append(inp[5][l_x - maxlen:])
                 new_lengths_x.append(maxlen)
             else:
-                new_seqs_mid.append(inp[3])
-                new_seqs_cat.append(inp[4])
-                new_noclk_seqs_mid.append(inp[5])
-                new_noclk_seqs_cat.append(inp[6])
+                new_seqs_mid.append(inp[2])
+                new_seqs_cat.append(inp[3])
+                new_noclk_seqs_mid.append(inp[4])
+                new_noclk_seqs_cat.append(inp[5])
                 new_lengths_x.append(l_x)
         lengths_x = new_lengths_x
         seqs_mid = new_seqs_mid
@@ -67,15 +67,14 @@ def prepare_data(input, target, maxlen=None, return_neg=False):
         noclk_cat_his[idx, :lengths_x[idx], :] = no_sy
 
     uids = numpy.array([inp[0] for inp in input])
-    mids = numpy.array([inp[1] for inp in input])
-    cats = numpy.array([inp[2] for inp in input])
+    sids = numpy.array([inp[1] for inp in input])
 
     if return_neg:
-        return uids, mids, cats, mid_his, cat_his, mid_mask, numpy.array(target), numpy.array(
+        return uids, sids, mid_his, cat_his, mid_mask, numpy.array(target), numpy.array(
             lengths_x), noclk_mid_his, noclk_cat_his
 
     else:
-        return uids, mids, cats, mid_his, cat_his, mid_mask, numpy.array(target), numpy.array(lengths_x)
+        return uids, sids, mid_his, cat_his, mid_mask, numpy.array(target), numpy.array(lengths_x)
 
 
 def eval(sess, test_data, model, model_path):
@@ -86,9 +85,9 @@ def eval(sess, test_data, model, model_path):
     stored_arr = []
     for src, tgt in test_data:
         nums += 1
-        uids, genders, sids, mid_his, cat_his, mid_mask, target, sl, noclk_mids, noclk_cats = prepare_data(src, tgt,
+        uids, sids, mid_his, cat_his, mid_mask, target, sl, noclk_mids, noclk_cats = prepare_data(src, tgt,
                                                                                                         return_neg=True)
-        prob, loss, acc, aux_loss = model.calculate(sess, [uids, mids, cats, mid_his, cat_his, mid_mask, target, sl,
+        prob, loss, acc, aux_loss = model.calculate(sess, [uids, sids, mid_his, cat_his, mid_mask, target, sl,
                                                            noclk_mids, noclk_cats])
         loss_sum += loss
         aux_loss_sum = aux_loss
@@ -174,11 +173,10 @@ def train(
             accuracy_sum = 0.
             aux_loss_sum = 0.
             for src, tgt in train_data:
-                uids, mids, cats, mid_his, cat_his, mid_mask, target, sl, noclk_mids, noclk_cats = prepare_data(src,
-                                                                                                                tgt,
-                                                                                                                maxlen,
-                                                                                                                return_neg=True)
-                loss, acc, aux_loss = model.train(sess, [uids, mids, cats, mid_his, cat_his, mid_mask, target, sl, lr,
+                uids, sids, mid_his, cat_his, mid_mask, target, sl, noclk_mids, noclk_cats = prepare_data(src, tgt,
+                                                                                                          maxlen,
+                                                                                                          return_neg=True)
+                loss, acc, aux_loss = model.train(sess, [uids, sids, mid_his, cat_his, mid_mask, target, sl, lr,
                                                          noclk_mids, noclk_cats])
                 loss_sum += loss
                 accuracy_sum += acc
